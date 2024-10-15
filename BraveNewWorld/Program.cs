@@ -281,7 +281,7 @@ namespace BraveNewWorld
         {
             ConsoleKey command = Console.ReadKey(true).Key;
 
-            ExecuteMovementCommand(command, out int deltaX, out int deltaY);
+            HandleMovementCommand(command, out int deltaX, out int deltaY);
 
             if (IsMovementAvailable(map, playerX + deltaX, playerY + deltaY))
             {
@@ -301,7 +301,7 @@ namespace BraveNewWorld
             Console.Write(' ');
         }
 
-        private static void ExecuteMovementCommand
+        private static void HandleMovementCommand
         (
             ConsoleKey command,
             out int deltaX,
