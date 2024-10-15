@@ -43,7 +43,8 @@ namespace BraveNewWorld
                     (
                         ref playerPositionX,
                         ref playerPositionY,
-                        map, PlayerSymbol,
+                        map, 
+                        PlayerSymbol,
                         TreasureSymbol,
                         ref playerScore,
                         ref treasuresCount
