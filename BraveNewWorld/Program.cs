@@ -49,6 +49,7 @@ namespace BraveNewWorld
                         ref treasuresCount
                     );
                 }
+
                 DrawPlayerScore(playerScoreWidgetX, playerScoreWidgetY, playerScore);
             };
 
@@ -108,7 +109,7 @@ namespace BraveNewWorld
             Console.ForegroundColor = defaultColor;
         }
 
-        private static void DrawPlayerScore(int x, int y, int playerScore, ConsoleColor scoreColor = ConsoleColor.Green)
+        private static void DrawPlayerScore(int coursorX, int coursorY, int playerScore, ConsoleColor scoreColor = ConsoleColor.Green)
         {
             int currentX = Console.CursorLeft;
             int currentY = Console.CursorTop;
@@ -118,7 +119,7 @@ namespace BraveNewWorld
             string score = $" Score: {playerScore}";
 
             Console.ForegroundColor = scoreColor;
-            Console.SetCursorPosition(x, y);
+            Console.SetCursorPosition(coursorX, coursorY);
             Console.Write(score);
 
             Console.ForegroundColor = defaultColor;
@@ -174,13 +175,16 @@ namespace BraveNewWorld
             return treasuresCount;
         }
 
-        private static void PlacePlayer(char[,] map, int x, int y, char playerSymbol)
+        private static void PlacePlayer(char[,] map, int positionX, int positionY, char playerSymbol)
         {
-            if (char.IsWhiteSpace(map[x, y]))
+            if (char.IsWhiteSpace(map[positionX, positionY]))
             {
-                map[x, y] = playerSymbol;
+                map[positionX, positionY] = playerSymbol;
             }
-            else throw new ArgumentOutOfRangeException();
+            else
+            {
+                throw new ArgumentOutOfRangeException();
+            }
         }
 
         private static int GetMaxStringLength(string[] lines)
@@ -210,7 +214,6 @@ namespace BraveNewWorld
             visited = Enqueue(visited, directory);
 
             DirectoryInfo directoryInfo = new DirectoryInfo(directory);
-
 
             while
             (
@@ -259,8 +262,8 @@ namespace BraveNewWorld
 
         private static void HandlePlayerInput
         (
-            ref int x,
-            ref int y,
+            ref int playerX,
+            ref int playerY,
             char[,] map,
             char playerSymbol,
             char treasureSymbol,
@@ -272,21 +275,21 @@ namespace BraveNewWorld
 
             GetDirection(command, out int deltaX, out int deltaY);
 
-            if (IsMovementAvailable(map, x + deltaX, y + deltaY))
+            if (IsMovementAvailable(map, playerX + deltaX, playerY + deltaY))
             {
-                ClearPreviousPosition(x, y, map);
-                MoveDirection(x + deltaX, y + deltaY, map, playerSymbol, treasureSymbol, ref playerScore, ref treasuresCount);
-                
-                x += deltaX;
-                y += deltaY;
+                ClearPreviousPosition(playerX, playerY, map);
+                MoveDirection(playerX + deltaX, playerY + deltaY, map, playerSymbol, treasureSymbol, ref playerScore, ref treasuresCount);
+
+                playerX += deltaX;
+                playerY += deltaY;
             }
         }
 
-        private static void ClearPreviousPosition(int x, int y, char[,] map, char voidSymbol = ' ')
+        private static void ClearPreviousPosition(int playerX, int playerY, char[,] map, char voidSymbol = ' ')
         {
-            map[x, y] = voidSymbol;
+            map[playerX, playerY] = voidSymbol;
 
-            Console.SetCursorPosition(x, y);
+            Console.SetCursorPosition(playerX, playerY);
             Console.Write(' ');
         }
 
@@ -330,8 +333,8 @@ namespace BraveNewWorld
 
         private static void MoveDirection
         (
-            int x,
-            int y,
+            int newPlayerX,
+            int newPlayerY,
             char[,] map,
             char playerSymbol,
             char treasureSymbol,
@@ -340,24 +343,25 @@ namespace BraveNewWorld
             int collectebleCost = 100
         )
         {
-            if (map[x, y] == treasureSymbol)
+            if (map[newPlayerX, newPlayerY] == treasureSymbol)
             {
                 CollectTreasure(ref playerScore, ref treasuresCount, collectebleCost);
             }
-            map[x, y] = playerSymbol;
 
-            Console.SetCursorPosition(x, y);
+            map[newPlayerX, newPlayerY] = playerSymbol;
+
+            Console.SetCursorPosition(newPlayerX, newPlayerY);
             Console.Write(playerSymbol);
         }
 
-        private static bool IsMovementAvailable(char[,] map, int x, int y, char wallSymbol = '#')
+        private static bool IsMovementAvailable(char[,] map, int playerX, int PlayerY, char wallSymbol = '#')
         {
-            return InBounds(map, x, y) && (map[x, y] != wallSymbol);
+            return InBounds(map, playerX, PlayerY) && (map[playerX, PlayerY] != wallSymbol);
         }
 
-        private static bool InBounds(char[,] map, int x, int y)
+        private static bool InBounds(char[,] map, int playerX, int playerY)
         {
-            return x > 0 && x < map.GetLength(0) && y > 0 && y < map.GetLength(1);
+            return playerX > 0 && playerX < map.GetLength(0) && playerY > 0 && playerY < map.GetLength(1);
         }
 
         private static void CollectTreasure(ref int playerScore, ref int treasuresCount, int treasureCost)
@@ -407,7 +411,7 @@ namespace BraveNewWorld
 
             return result;
         }
-
+        
         private static string[] Expand(string[] strings, int growthRate = 2)
         {
             string[] result;
@@ -504,7 +508,10 @@ namespace BraveNewWorld
         {
             foreach (string line in strings)
             {
-                if (line == query) return true;
+                if (line == query) 
+                {
+                    return true;
+                } 
             }
 
             return false;
