@@ -270,8 +270,8 @@ namespace BraveNewWorld
 
         private static void HandlePlayerInput
         (
-            ref int playerX,
-            ref int playerY,
+            ref int playerPositionX,
+            ref int playerPositionY,
             char[,] map,
             char playerSymbol,
             char treasureSymbol,
@@ -281,15 +281,24 @@ namespace BraveNewWorld
         {
             ConsoleKey command = Console.ReadKey(true).Key;
 
-            HandleMovementCommand(command, out int deltaX, out int deltaY);
+            HandleMovementCommand( out int deltaX, out int deltaY, command);
 
-            if (IsMovementAvailable(map, playerX + deltaX, playerY + deltaY))
+            if (IsMovementAvailable(map, playerPositionX + deltaX, playerPositionY + deltaY))
             {
-                ClearPreviousPosition(playerX, playerY, map);
-                MoveDirection(playerX + deltaX, playerY + deltaY, map, playerSymbol, treasureSymbol, ref playerScore, ref treasuresCount);
+                ClearPreviousPosition(playerPositionX, playerPositionY, map);
+                MoveDirection
+                (
+                    playerPositionX + deltaX, 
+                    playerPositionY + deltaY, 
+                    map, 
+                    playerSymbol, 
+                    treasureSymbol, 
+                    ref playerScore, 
+                    ref treasuresCount
+                );
 
-                playerX += deltaX;
-                playerY += deltaY;
+                playerPositionX += deltaX;
+                playerPositionY += deltaY;
             }
         }
 
@@ -303,9 +312,9 @@ namespace BraveNewWorld
 
         private static void HandleMovementCommand
         (
-            ConsoleKey command,
             out int deltaX,
             out int deltaY,
+            ConsoleKey command,
             ConsoleKey upMovement = ConsoleKey.UpArrow,
             ConsoleKey downMovement = ConsoleKey.DownArrow,
             ConsoleKey leftMovement = ConsoleKey.LeftArrow,
@@ -335,8 +344,8 @@ namespace BraveNewWorld
 
         private static void MoveDirection
         (
-            int newPlayerX,
-            int newPlayerY,
+            int newPlayerPositionX,
+            int newPlayerPositionY,
             char[,] map,
             char playerSymbol,
             char treasureSymbol,
@@ -345,14 +354,14 @@ namespace BraveNewWorld
             int collectebleCost = 100
         )
         {
-            if (map[newPlayerX, newPlayerY] == treasureSymbol)
+            if (map[newPlayerPositionX, newPlayerPositionY] == treasureSymbol)
             {
                 CollectTreasure(ref playerScore, ref treasuresCount, collectebleCost);
             }
 
-            map[newPlayerX, newPlayerY] = playerSymbol;
+            map[newPlayerPositionX, newPlayerPositionY] = playerSymbol;
 
-            Console.SetCursorPosition(newPlayerX, newPlayerY);
+            Console.SetCursorPosition(newPlayerPositionX, newPlayerPositionY);
             Console.Write(playerSymbol);
         }
 
@@ -392,7 +401,7 @@ namespace BraveNewWorld
 
             float fillPercentage = 1f;
 
-            if (IsArrayNotInitialized(queue) == false)
+            if (IsNullOrEmptyArray(queue) == false)
             {
                 result = queue[0];
                 queue[0] = null;
@@ -418,7 +427,7 @@ namespace BraveNewWorld
         {
             string[] result;
 
-            if (IsArrayNotInitialized(strings))
+            if (IsNullOrEmptyArray(strings))
             {
                 result = new string[growthRate];
             }
@@ -439,7 +448,7 @@ namespace BraveNewWorld
         {
             string[] result = new string[0];
 
-            if (IsArrayNotInitialized(strings) == false)
+            if (IsNullOrEmptyArray(strings) == false)
             {
                 result = new string[strings.Length / compressionRate];
 
@@ -456,7 +465,7 @@ namespace BraveNewWorld
         {
             int result = 0;
 
-            if (IsArrayNotInitialized(strings))
+            if (IsNullOrEmptyArray(strings))
             {
                 result = notInitializedOrEmptyCode;
 
@@ -481,7 +490,7 @@ namespace BraveNewWorld
 
         private static void ShiftArrayToLeft(string[] strings, int index = 0)
         {
-            if (IsArrayNotInitialized(strings) == false)
+            if (IsNullOrEmptyArray(strings) == false)
             {
                 int lastElementIndex = GetLastElementIndex(strings);
 
@@ -496,14 +505,14 @@ namespace BraveNewWorld
             }
         }
 
-        private static bool IsArrayNotInitialized(string[] strings)
+        private static bool IsNullOrEmptyArray(string[] strings)
         {
             return strings == null || strings.Length == 0;
         }
 
         private static bool IsExpandNeeded(string[] strings)
         {
-            return IsArrayNotInitialized(strings) || (GetLastElementIndex(strings) + 1) >= strings.Length;
+            return IsNullOrEmptyArray(strings) || (GetLastElementIndex(strings) + 1) >= strings.Length;
         }
 
         private static bool Contains(string[] strings, string query)
