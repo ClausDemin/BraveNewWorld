@@ -19,7 +19,6 @@ namespace BraveNewWorld
 
             int playerScore = 0;
 
-
             Console.CursorVisible = false;
 
             string mapFilePath = FindFile(MapFolder, MapFilename);
@@ -266,53 +265,20 @@ namespace BraveNewWorld
             char playerSymbol,
             char treasureSymbol,
             ref int playerScore,
-            ref int treasuresCount,
-            ConsoleKey upMovement = ConsoleKey.UpArrow,
-            ConsoleKey downMovement = ConsoleKey.DownArrow,
-            ConsoleKey leftMovement = ConsoleKey.LeftArrow,
-            ConsoleKey rightMovement = ConsoleKey.RightArrow
-
+            ref int treasuresCount
         )
         {
-
             ConsoleKey command = Console.ReadKey(true).Key;
 
-            if (command == upMovement)
-            {
-                if (IsMovementAvailable(map, x, y - 1))
-                {
-                    ClearPreviousPosition(x, y, map);
-                    MoveDirection(x, y - 1, map, playerSymbol, treasureSymbol, ref playerScore, ref treasuresCount);
-                    --y;
-                }
-            }
-            else if (command == downMovement)
-            {
-                if (IsMovementAvailable(map, x, y + 1))
-                {
-                    ClearPreviousPosition(x, y, map);
-                    MoveDirection(x, y + 1, map, playerSymbol, treasureSymbol, ref playerScore, ref treasuresCount);
-                    ++y;
-                }
-            }
-            else if (command == leftMovement)
-            {
-                if (IsMovementAvailable(map, x - 1, y))
-                {
-                    ClearPreviousPosition(x, y, map);
-                    MoveDirection(x - 1, y, map, playerSymbol, treasureSymbol, ref playerScore, ref treasuresCount);
-                    --x;
-                }
+            GetDirection(command, out int deltaX, out int deltaY);
 
-            }
-            else if (command == rightMovement)
+            if (IsMovementAvailable(map, x + deltaX, y + deltaY))
             {
-                if (IsMovementAvailable(map, x + 1, y))
-                {
-                    ClearPreviousPosition(x, y, map);
-                    MoveDirection(x + 1, y, map, playerSymbol, treasureSymbol, ref playerScore, ref treasuresCount);
-                    ++x;
-                }
+                ClearPreviousPosition(x, y, map);
+                MoveDirection(x + deltaX, y + deltaY, map, playerSymbol, treasureSymbol, ref playerScore, ref treasuresCount);
+                
+                x += deltaX;
+                y += deltaY;
             }
         }
 
@@ -322,6 +288,44 @@ namespace BraveNewWorld
 
             Console.SetCursorPosition(x, y);
             Console.Write(' ');
+        }
+
+        private static void GetDirection
+        (
+            ConsoleKey command,
+            out int deltaX,
+            out int deltaY,
+            ConsoleKey upMovement = ConsoleKey.UpArrow,
+            ConsoleKey downMovement = ConsoleKey.DownArrow,
+            ConsoleKey leftMovement = ConsoleKey.LeftArrow,
+            ConsoleKey rightMovement = ConsoleKey.RightArrow
+        )
+        {
+            if (command == upMovement)
+            {
+                deltaX = 0;
+                deltaY = -1;
+            }
+            else if (command == downMovement)
+            {
+                deltaX = 0;
+                deltaY = 1;
+            }
+            else if (command == leftMovement)
+            {
+                deltaX = -1;
+                deltaY = 0;
+            }
+            else if (command == rightMovement)
+            {
+                deltaX = 1;
+                deltaY = 0;
+            }
+            else
+            {
+                deltaX = 0;
+                deltaY = 0;
+            }
         }
 
         private static void MoveDirection
@@ -348,7 +352,7 @@ namespace BraveNewWorld
 
         private static bool IsMovementAvailable(char[,] map, int x, int y, char wallSymbol = '#')
         {
-            return ((map[x, y] == wallSymbol) == false) && InBounds(map, x, y);
+            return InBounds(map, x, y) && (map[x, y] != wallSymbol);
         }
 
         private static bool InBounds(char[,] map, int x, int y)
