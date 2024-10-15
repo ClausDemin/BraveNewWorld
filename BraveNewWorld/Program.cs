@@ -43,7 +43,7 @@ namespace BraveNewWorld
                     (
                         ref playerPositionX,
                         ref playerPositionY,
-                        map, 
+                        map,
                         PlayerSymbol,
                         TreasureSymbol,
                         ref playerScore,
@@ -99,18 +99,18 @@ namespace BraveNewWorld
             Console.ForegroundColor = defaultColor;
         }
 
-        private static void DrawPlayer(int x, int y, char playerSymbol, ConsoleColor playerColor = ConsoleColor.Yellow)
+        private static void DrawPlayer(int coursorLeft, int coursorTop, char playerSymbol, ConsoleColor playerColor = ConsoleColor.Yellow)
         {
             ConsoleColor defaultColor = Console.ForegroundColor;
             Console.ForegroundColor = playerColor;
 
-            Console.SetCursorPosition(x, y);
+            Console.SetCursorPosition(coursorLeft, coursorTop);
             Console.Write(playerSymbol);
 
             Console.ForegroundColor = defaultColor;
         }
 
-        private static void DrawPlayerScore(int coursorX, int coursorY, int playerScore, ConsoleColor scoreColor = ConsoleColor.Green)
+        private static void DrawPlayerScore(int coursorLeft, int coursorTop, int playerScore, ConsoleColor scoreColor = ConsoleColor.Green)
         {
             int currentX = Console.CursorLeft;
             int currentY = Console.CursorTop;
@@ -120,7 +120,7 @@ namespace BraveNewWorld
             string score = $" Score: {playerScore}";
 
             Console.ForegroundColor = scoreColor;
-            Console.SetCursorPosition(coursorX, coursorY);
+            Console.SetCursorPosition(coursorLeft, coursorTop);
             Console.Write(score);
 
             Console.ForegroundColor = defaultColor;
@@ -137,12 +137,12 @@ namespace BraveNewWorld
                 mapStrings = File.ReadAllLines(fileDirectory);
             }
 
-            mapData = ToCharArray(mapStrings);
+            mapData = ConvertToCharArray(mapStrings);
 
             return mapData;
         }
 
-        private static char[,] ToCharArray(string[] lines)
+        private static char[,] ConvertToCharArray(string[] lines)
         {
             char[,] result = new char[GetMaxStringLength(lines), lines.Length];
 
@@ -176,11 +176,11 @@ namespace BraveNewWorld
             return treasuresCount;
         }
 
-        private static void PlacePlayer(char[,] map, int positionX, int positionY, char playerSymbol)
+        private static void PlacePlayer(char[,] map, int playerPositionX, int playerPositionY, char playerSymbol)
         {
-            if (char.IsWhiteSpace(map[positionX, positionY]))
+            if (char.IsWhiteSpace(map[playerPositionX, playerPositionY]))
             {
-                map[positionX, positionY] = playerSymbol;
+                map[playerPositionX, playerPositionY] = playerSymbol;
             }
             else
             {
@@ -205,16 +205,34 @@ namespace BraveNewWorld
 
         private static string FindFile(string folder, string filename, string topLevelFolder = "BraveNewWorld")
         {
+            string directory = Directory.GetCurrentDirectory();
+
+            DirectoryInfo directoryInfo = new DirectoryInfo(directory);
+
+            directory = SearchFolderInBreadthFirst(folder, topLevelFolder, directory, directoryInfo);
+            directoryInfo = new DirectoryInfo(directory);
+
+            if (directoryInfo.Name == topLevelFolder)
+            {
+                foreach (var subDirectory in directoryInfo.GetDirectories())
+                {
+                    if (subDirectory.Name == folder)
+                    {
+                        directory = subDirectory.FullName;
+                    }
+                }
+            }
+
+            return directory + $"\\{filename}";
+        }
+
+        private static string SearchFolderInBreadthFirst(string folder, string topLevelFolder, string directory, DirectoryInfo directoryInfo)
+        {
             string[] queue = null;
             string[] visited = null;
 
-            string directory = string.Empty;
-            directory = Directory.GetCurrentDirectory();
-
             queue = Enqueue(queue, directory);
             visited = Enqueue(visited, directory);
-
-            DirectoryInfo directoryInfo = new DirectoryInfo(directory);
 
             while
             (
@@ -247,18 +265,7 @@ namespace BraveNewWorld
                 }
             }
 
-            if (directoryInfo.Name == topLevelFolder)
-            {
-                foreach (var subDirectory in directoryInfo.GetDirectories())
-                {
-                    if (subDirectory.Name == folder)
-                    {
-                        directory = subDirectory.FullName;
-                    }
-                }
-            }
-
-            return directory + $"\\{filename}";
+            return directory;
         }
 
         private static void HandlePlayerInput
@@ -274,7 +281,7 @@ namespace BraveNewWorld
         {
             ConsoleKey command = Console.ReadKey(true).Key;
 
-            GetDirection(command, out int deltaX, out int deltaY);
+            ExecuteMovementCommand(command, out int deltaX, out int deltaY);
 
             if (IsMovementAvailable(map, playerX + deltaX, playerY + deltaY))
             {
@@ -294,7 +301,7 @@ namespace BraveNewWorld
             Console.Write(' ');
         }
 
-        private static void GetDirection
+        private static void ExecuteMovementCommand
         (
             ConsoleKey command,
             out int deltaX,
@@ -305,30 +312,24 @@ namespace BraveNewWorld
             ConsoleKey rightMovement = ConsoleKey.RightArrow
         )
         {
+            deltaX = 0;
+            deltaY = 0;
+
             if (command == upMovement)
             {
-                deltaX = 0;
                 deltaY = -1;
             }
             else if (command == downMovement)
             {
-                deltaX = 0;
                 deltaY = 1;
             }
             else if (command == leftMovement)
             {
                 deltaX = -1;
-                deltaY = 0;
             }
             else if (command == rightMovement)
             {
                 deltaX = 1;
-                deltaY = 0;
-            }
-            else
-            {
-                deltaX = 0;
-                deltaY = 0;
             }
         }
 
@@ -412,7 +413,7 @@ namespace BraveNewWorld
 
             return result;
         }
-        
+
         private static string[] Expand(string[] strings, int growthRate = 2)
         {
             string[] result;
@@ -509,10 +510,10 @@ namespace BraveNewWorld
         {
             foreach (string line in strings)
             {
-                if (line == query) 
+                if (line == query)
                 {
                     return true;
-                } 
+                }
             }
 
             return false;
